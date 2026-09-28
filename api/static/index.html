@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantum Signature Security</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        --bg: #06131f;
+        --bg-soft: #0d1d2a;
+        --panel: rgba(15, 25, 38, 0.8);
+        --panel-strong: rgba(17, 31, 50, 0.96);
+        --card: rgba(13, 24, 36, 0.82);
+        --line: rgba(130, 178, 255, 0.26);
+        --text: #ebf4ff;
+        --muted: #a7bad8;
+        --primary: #7ad9ff;
+        --secondary: #8d7bff;
+        --good: #32e0a1;
+        --bad: #ff5d73;
+        --warn: #ffbe5c;
+        --glow: rgba(122, 217, 255, 0.4);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body, #root {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Segoe UI", Inter, Arial, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(122, 217, 255, 0.18), transparent 26%),
+          radial-gradient(circle at bottom right, rgba(141, 123, 255, 0.18), transparent 22%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+        padding: 32px 18px 70px;
+      }
+
+      .app-shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: grid;
+        gap: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        padding: 18px 18px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(122,217,255,0.9), rgba(141,123,255,0.9));
+        box-shadow: 0 0 25px rgba(122, 217, 255, 0.5);
+        position: relative;
+      }
+
+      .brand-mark::before, .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: 9px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.86);
+      }
+
+      .brand-mark::after {
+        inset: 17px;
+        background: rgba(255,255,255,0.84);
+        border: none;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(122,217,255,0.25);
+        background: rgba(122,217,255,0.08);
+        color: var(--primary);
+        border-radius: 999px;
+        padding: 9px 14px;
+        font-size: 0.83rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 12px rgba(50, 224, 161, 0.9);
+      }
+
+      .hero {
+        background: linear-gradient(135deg, rgba(13, 28, 41, 0.98), rgba(17, 46, 60, 0.98));
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 30px 28px 22px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      .hero-inner {
+        display: grid;
+        grid-template-columns: 1.35fr 0.95fr;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        font-size: 0.74rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.3rem, 5vw, 4.3rem);
+        line-height: 1.02;
+        letter-spacing: -0.05em;
+      }
+
+      .hero-text {
+        margin-top: 18px;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: rgba(235,244,255,0.8);
+        max-width: 700px;
+      }
+
+      .stats-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .stat-box {
+        flex: 1 1 120px;
+        min-height: 88px;
+        padding: 16px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(122,217,255,0.14);
+        background: rgba(122,217,255,0.04);
+      }
+
+      .stat-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .stat-value {
+        margin-top: 10px;
+        font-size: 1.7rem;
+        font-weight: 700;
+      }
+
+      .mini-panel {
+        border: 1px solid rgba(122,217,255,0.16);
+        border-radius: 24px;
+        background: rgba(11, 19, 29, 0.8);
+        padding: 18px 16px 14px;
+        overflow: hidden;
+      }
+
+      .mini-panel h3 {
+        margin: 0 0 14px;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .scene {
+        position: relative;
+        height: 220px;
+        border-radius: 26px;
+        background:
+          linear-gradient(180deg, rgba(122,217,255,0.04), rgba(141,123,255,0.06)),
+          rgba(7, 15, 21, 0.7);
+        border: 1px solid rgba(122,217,255,0.12);
+        overflow: hidden;
+      }
+
+      .orbit {
+        position: absolute;
+        inset: 18px 30px;
+        border-radius: 50%;
+        border: 1px solid rgba(122,217,255,0.22);
+        box-shadow: 0 0 20px rgba(122,217,255,0.05);
+      }
+
+      .beam {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 54%;
+        height: 4px;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(90deg, rgba(122,217,255,0), rgba(122,217,255,0.9), rgba(141,123,255,0.9), rgba(122,217,255,0));
+        box-shadow: 0 0 18px rgba(122,217,255,0.7);
+        animation: beamPulse 2.8s ease-in-out infinite;
+      }
+
+      .beam::after {
+        content: "";
+        position: absolute;
+        inset: -8px 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, rgba(122,217,255,0.2), transparent);
+        animation: shimmer 2.2s linear infinite;
+      }
+
+      .person {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 112px;
+        height: 146px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .person.alice { left: 26px; }
+      .person.bob { right: 26px; animation-delay: 0.6s; }
+
+      .avatar {
+        position: relative;
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        background: linear-gradient(135deg, rgba(122,217,255,0.28), rgba(141,123,255,0.18));
+        border: 1px solid rgba(122,217,255,0.25);
+        box-shadow: 0 0 25px rgba(122,217,255,0.2);
+      }
+
+      .person.alice .avatar { background: linear-gradient(135deg, rgba(53, 181, 255, 0.32), rgba(116, 124, 255, 0.18)); }
+      .person.bob .avatar { background: linear-gradient(135deg, rgba(125, 98, 255, 0.3), rgba(255, 124, 220, 0.12)); }
+
+      .label {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(10, 20, 30, 0.8);
+        border: 1px solid rgba(122,217,255,0.18);
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .pulse {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(122,217,255,0.8);
+        box-shadow: 0 0 18px rgba(122,217,255,0.7);
+        animation: pulse 1.7s infinite ease-out;
+      }
+
+      .pulse.one { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+      .pulse.two { left: 42%; top: 38%; animation-delay: 0.4s; }
+      .pulse.three { left: 58%; top: 62%; animation-delay: 0.8s; }
+
+      .scene-packet {
+        position: absolute;
+        left: 23%;
+        top: 50%;
+        z-index: 3;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--primary);
+        box-shadow: 0 0 18px var(--glow), 0 0 0 5px rgba(122,217,255,0.08);
+        animation: packetTravel 3.2s ease-in-out infinite;
+      }
+
+      .scene-status {
+        position: absolute;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+        z-index: 4;
+        padding: 6px 9px;
+        border: 1px solid rgba(122,217,255,0.22);
+        border-radius: 999px;
+        background: rgba(6,19,31,0.82);
+        color: var(--primary);
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .scene-attacker {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 4;
+        transform: translate(-50%, -50%);
+        padding: 8px 10px;
+        border: 1px solid var(--bad);
+        border-radius: 8px;
+        background: rgba(55,12,24,0.92);
+        color: var(--bad);
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        animation: interceptorBlink 1.2s ease-in-out infinite;
+      }
+
+      .scene-forge .scene-packet {
+        background: var(--bad);
+        box-shadow: 0 0 18px rgba(255,93,115,0.7);
+        animation: packetIntercept 2.1s ease-in-out infinite;
+      }
+
+      .scene-replay .scene-packet {
+        background: var(--warn);
+        box-shadow: 0 0 18px rgba(255,190,92,0.7);
+        animation: packetReplay 2.4s ease-in-out infinite;
+      }
+
+      .scene-channel .beam {
+        background: linear-gradient(90deg, var(--primary), var(--bad), var(--primary));
+        animation: beamNoise 0.42s steps(2, end) infinite;
+      }
+
+      .scene-channel .scene-packet {
+        background: var(--warn);
+        animation: packetNoise 1.4s ease-in-out infinite;
+      }
+
+      .scene-document .scene-packet {
+        background: var(--good);
+        box-shadow: 0 0 18px rgba(50,224,161,0.7);
+        animation-duration: 2.6s;
+      }
+
+      @keyframes packetTravel {
+        0%, 8% { left: 23%; opacity: 0; transform: scale(0.7); }
+        18% { opacity: 1; transform: scale(1); }
+        78% { opacity: 1; transform: scale(1); }
+        92%, 100% { left: 77%; opacity: 0; transform: scale(0.7); }
+      }
+
+      @keyframes packetIntercept {
+        0%, 12% { left: 23%; opacity: 0; }
+        28% { left: 48%; opacity: 1; }
+        42%, 70% { left: 50%; opacity: 1; transform: scale(1.2); }
+        88%, 100% { left: 50%; opacity: 0; transform: scale(0.6); }
+      }
+
+      @keyframes packetReplay {
+        0%, 10% { left: 23%; opacity: 0; }
+        25%, 48% { left: 77%; opacity: 1; }
+        62%, 78% { left: 23%; opacity: 0.9; }
+        92%, 100% { left: 77%; opacity: 0; }
+      }
+
+      @keyframes packetNoise {
+        0%, 100% { left: 23%; opacity: 0.35; transform: translate(0, 0); }
+        25% { left: 42%; opacity: 1; transform: translate(4px, -9px); }
+        50% { left: 57%; opacity: 0.5; transform: translate(-7px, 8px); }
+        75% { left: 76%; opacity: 0.2; transform: translate(8px, -5px); }
+      }
+
+      @keyframes beamNoise {
+        0%, 100% { transform: translate(-50%, -50%) scaleX(1); opacity: 0.8; }
+        50% { transform: translate(-50%, -50%) scaleX(0.76) skewX(12deg); opacity: 0.35; }
+      }
+
+      @keyframes interceptorBlink {
+        0%, 100% { opacity: 0.45; }
+        50% { opacity: 1; box-shadow: 0 0 18px rgba(255,93,115,0.4); }
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+      }
+
+      .panel {
+        background: rgba(13, 24, 36, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        padding: 22px 22px 18px;
+        box-shadow: 0 18px 50px rgba(9, 15, 22, 0.32);
+      }
+
+      .panel h2 {
+        margin: 0 0 20px;
+        font-size: 1.08rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+
+      .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(230px, 1fr));
+        gap: 18px;
+      }
+
+      .scenario-card {
+        border-radius: 20px;
+        border: 1px solid rgba(122,217,255,0.12);
+        background: linear-gradient(180deg, rgba(11, 18, 26, 0.8), rgba(16, 26, 40, 0.96));
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .scenario-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(122,217,255,0.34);
+        box-shadow: 0 0 0 1px rgba(122,217,255,0.12);
+      }
+
+      .scenario-card.active {
+        border-color: rgba(122,217,255,0.4);
+        box-shadow: inset 0 0 0 1px rgba(122,217,255,0.18), 0 0 25px rgba(122,217,255,0.1);
+      }
+
+      .scenario-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .scenario-title {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .scenario-tag {
+        font-size: 0.68rem;
+        border-radius: 999px;
+        padding: 6px 9px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+      }
+
+      .scenario-tag.good {
+        color: var(--good);
+        background: rgba(50,224,161,0.08);
+        border-color: rgba(50,224,161,0.1);
+      }
+
+      .scenario-tag.bad {
+        color: var(--bad);
+        background: rgba(255,93,115,0.08);
+        border-color: rgba(255,93,115,0.1);
+      }
+
+      .scenario-card p {
+        margin: 0;
+        color: rgba(235,244,255,0.76);
+        line-height: 1.6;
+        font-size: 0.92rem;
+      }
+
+      .scenario-card button {
+        border: none;
+        background: linear-gradient(135deg, rgba(122,217,255,0.18), rgba(141,123,255,0.22));
+        color: var(--text);
+        width: 100%;
+        border-radius: 12px;
+        min-height: 42px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, filter 0.2s ease;
+      }
+
+      .scenario-card button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+      }
+
+      .detail-panel {
+        display: grid;
+        gap: 16px;
+        align-content: start;
+      }
+
+      .input-box {
+        background: rgba(9, 18, 28, 0.7);
+        border: 1px solid rgba(122,217,255,0.12);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .input-box label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .input-box input {
+        width: 100%;
+        background: rgba(18, 31, 45, 0.9);
+        border: 1px solid rgba(122,217,255,0.15);
+        border-radius: 10px;
+        color: var(--text);
+        min-height: 42px;
+        padding: 10px 12px;
+        font-size: 0.96rem;
+      }
+
+      .run-button {
+        width: 100%;
+        min-height: 48px;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: #06131f;
+        background: linear-gradient(135deg, var(--primary), #a7d5ff);
+        box-shadow: 0 12px 30px rgba(122,217,255,0.28);
+      }
+
+      .result-box {
+        min-height: 0;
+        border-radius: 16px;
+        border: 1px solid rgba(122,217,255,0.14);
+        background: rgba(8, 16, 23, 0.8);
+        padding: 16px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .empty-result {
+        min-height: 48px;
+        display: grid;
+        place-items: center start;
+        color: var(--muted);
+      }
+
+      .result-badge {
+        padding: 7px 10px;
+        border-radius: 999px;
+        width: fit-content;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .result-badge.good {
+        color: var(--good);
+        background: rgba(50,224,161,0.08);
+        border: 1px solid rgba(50,224,161,0.16);
+      }
+
+      .result-badge.bad {
+        color: var(--bad);
+        background: rgba(255,93,115,0.08);
+        border: 1px solid rgba(255,93,115,0.18);
+      }
+
+      .result-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        border-bottom: 1px solid rgba(122,217,255,0.08);
+        padding-bottom: 9px;
+      }
+
+      .result-line strong {
+        color: var(--text);
+      }
+
+      .trace-box {
+        border: 1px solid rgba(141,123,255,0.22);
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(28,22,55,0.7), rgba(8,16,23,0.8));
+        padding: 15px;
+        display: grid;
+        gap: 11px;
+      }
+
+      .trace-heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: baseline;
+      }
+
+      .trace-heading strong {
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+
+      .trace-heading span {
+        color: var(--secondary);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .trace-step {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 9px;
+        align-items: start;
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.35;
+      }
+
+      .trace-step b {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .trace-marker {
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--text);
+        background: rgba(141,123,255,0.26);
+        border: 1px solid rgba(141,123,255,0.45);
+        font-size: 0.7rem;
+        font-weight: 800;
+      }
+
+      .trace-risk {
+        color: var(--warn);
+        font-size: 0.78rem;
+        border-top: 1px solid rgba(122,217,255,0.1);
+        padding-top: 10px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--muted);
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(122,217,255,0.12);
+        background: rgba(8, 16, 23, 0.8);
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .dot.good { background: var(--good); }
+      .dot.bad { background: var(--bad); }
+      .dot.warn { background: var(--warn); }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(-50%) translateX(0); }
+        50% { transform: translateY(-52%) translateX(6px); }
+      }
+
+      @keyframes beamPulse {
+        0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scaleX(0.94); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scaleX(1.08); }
+      }
+
+      @keyframes shimmer {
+        0% { transform: translateX(-18%); opacity: 0.2; }
+        50% { opacity: 0.9; }
+        100% { transform: translateX(18%); opacity: 0.2; }
+      }
+
+      @keyframes pulse {
+        0% { opacity: 0; transform: scale(0.8); }
+        35% { opacity: 1; }
+        100% { opacity: 0; transform: scale(1.7); }
+      }
+
+      @media (max-width: 980px) {
+        .hero-inner, .content-grid { grid-template-columns: 1fr; }
+        .scenario-grid { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 640px) {
+        body { padding-left: 12px; padding-right: 12px; }
+        .topbar { flex-direction: column; align-items: flex-start; }
+        .hero { padding-left: 18px; padding-right: 18px; }
+        .scene { height: 190px; }
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useMemo, useState } = React;
+
+      const scenarios = [
+        {
+          id: 'legit',
+          label: 'Legitimate',
+          tone: 'good',
+          title: 'Valid exchange',
+          story: 'Alice and Bob share the right entangled pair, so the signature matches expected quantum behavior and is accepted.'
+        },
+        {
+          id: 'forge',
+          label: 'Attack',
+          tone: 'bad',
+          title: 'Forged signature',
+          story: 'A fake signer cannot recreate the trusted Bell pattern, so the detector sees a mismatch and rejects it.'
+        },
+        {
+          id: 'replay',
+          label: 'Attack',
+          tone: 'bad',
+          title: 'Replay attack',
+          story: 'An old valid signature is reused for a different message. The old pattern no longer fits the new state.'
+        },
+        {
+          id: 'channel',
+          label: 'Attack',
+          tone: 'bad',
+          title: 'Channel tampering',
+          story: 'The signal changes while moving through the channel. Noise and bit flips make the quantum pattern break.'
+        },
+        {
+          id: 'document',
+          label: 'Integrity',
+          tone: 'good',
+          title: 'Document integrity',
+          story: 'Upload a document and turn its SHA-256 fingerprint into a verifiable quantum message.'
+        }
+      ];
+
+      function formatValue(value) {
+        if (typeof value === 'number') return value.toFixed(4);
+        return value;
+      }
+
+      function renderResultBox(resultData) {
+        if (!resultData) {
+          return <div className="empty-result">Ready to simulate a flow.</div>;
+        }
+
+        const verdict = resultData.verdict || 'UNKNOWN';
+        const isGood = ['ACCEPT', 'VALID'].includes(verdict);
+        const z = resultData.z_basis || {};
+        const x = resultData.x_basis || {};
+        const zExpected = z.expected_p1 ?? z.expected_p1_new_message ?? '—';
+        const zMeasured = z.measured_p1 ?? '—';
+        const xExpected = x.expected_p1 ?? x.expected_p1_new_message ?? '—';
+        const xMeasured = x.measured_p1 ?? '—';
+        const zScoreZ = Number(resultData.z_score_z_basis || 0);
+        const zScoreX = Number(resultData.z_score_x_basis || 0);
+
+        return (
+          <>
+            <div className={['result-badge', isGood ? 'good' : 'bad'].join(' ')}>{verdict}</div>
+            <div className="result-line"><span>Z expected</span><strong>{formatValue(zExpected)}</strong></div>
+            <div className="result-line"><span>Z measured</span><strong>{formatValue(zMeasured)}</strong></div>
+            <div className="result-line"><span>X expected</span><strong>{formatValue(xExpected)}</strong></div>
+            <div className="result-line"><span>X measured</span><strong>{formatValue(xMeasured)}</strong></div>
+            <div className="result-line"><span>Detection strength</span><strong>{zScoreZ.toFixed(2)} / {zScoreX.toFixed(2)}</strong></div>
+            {resultData.document_sha256 ? (
+              <div className="result-line"><span>Document SHA-256</span><strong>{resultData.document_sha256.slice(0, 16)}...</strong></div>
+            ) : null}
+            {resultData.reason ? (
+              <div className="result-line"><span>Integrity reason</span><strong>{resultData.reason}</strong></div>
+            ) : null}
+          </>
+        );
+      }
+
+      function renderSecurityTrace(resultData) {
+        if (!resultData) return null;
+
+        const zScoreZ = Number(resultData.z_score_z_basis || 0);
+        const zScoreX = Number(resultData.z_score_x_basis || 0);
+        const flaggedBases = [
+          zScoreZ > 4 ? 'Z-basis' : null,
+          zScoreX > 4 ? 'X-basis' : null
+        ].filter(Boolean);
+        const decision = resultData.verdict === 'ACCEPT'
+          ? 'Both measurement bases match the expected signature pattern.'
+          : `${flaggedBases.join(' and ')} exceeded the z-score threshold.`;
+
+        return (
+          <div className="trace-box">
+            <div className="trace-heading">
+              <strong>Explainable security trace</strong>
+              <span>auditable decision</span>
+            </div>
+            <div className="trace-step">
+              <span className="trace-marker">1</span>
+              <span><b>Quantum check:</b> signature measured in Z and X bases.</span>
+            </div>
+            <div className="trace-step">
+              <span className="trace-marker">2</span>
+              <span><b>Evidence:</b> Z {zScoreZ.toFixed(2)} / X {zScoreX.toFixed(2)} against threshold 4.00.</span>
+            </div>
+            <div className="trace-step">
+              <span className="trace-marker">3</span>
+              <span><b>Reason:</b> {decision}</span>
+            </div>
+            <div className="trace-risk">10-round blind-guess forgery probability: 9.54e-7</div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [active, setActive] = useState('legit');
+        const [message, setMessage] = useState('release payment batch #4471');
+        const [oldMessage, setOldMessage] = useState('release payment batch #4471');
+        const [newMessage, setNewMessage] = useState('release payment batch #9999');
+        const [flipProb, setFlipProb] = useState('0.2');
+        const [trustedDocumentFile, setTrustedDocumentFile] = useState(null);
+        const [documentFile, setDocumentFile] = useState(null);
+        const [result, setResult] = useState(null);
+        const [loading, setLoading] = useState(false);
+
+        const selected = useMemo(() => scenarios.find((s) => s.id === active), [active]);
+
+        async function postJson(path, body) {
+          const response = await fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          return response.json();
+        }
+
+        async function runScenario(id) {
+          setActive(id);
+          setLoading(true);
+
+          try {
+            let payload;
+            if (id === 'legit') {
+              payload = await postJson('/api/sign-and-verify', { message, shots: 3000 });
+            } else if (id === 'forge') {
+              payload = await postJson('/api/attack/forge', { message, shots: 3000 });
+            } else if (id === 'replay') {
+              payload = await postJson('/api/attack/replay', {
+                old_message: oldMessage,
+                new_message: newMessage,
+                shots: 3000
+              });
+            } else if (id === 'document') {
+              if (!trustedDocumentFile || !documentFile) {
+                setResult({ verdict: 'Select both documents first', z_basis: {}, x_basis: {} });
+                return;
+              }
+              const trustedBytes = await trustedDocumentFile.arrayBuffer();
+              const trustedDigest = await crypto.subtle.digest('SHA-256', trustedBytes);
+              const expectedSha256 = Array.from(new Uint8Array(trustedDigest))
+                .map((byte) => byte.toString(16).padStart(2, '0')).join('');
+              const bytes = new Uint8Array(await documentFile.arrayBuffer());
+              let binary = '';
+              bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+              payload = await postJson('/api/document-sign-and-verify', {
+                filename: documentFile.name,
+                content_base64: btoa(binary),
+                expected_sha256: expectedSha256,
+                shots: 3000
+              });
+            } else {
+              payload = await postJson('/api/attack/channel-manipulation', {
+                message,
+                flip_prob: Number(flipProb || 0),
+                shots: 3000
+              });
+            }
+            setResult(payload);
+          } catch (error) {
+            setResult({ verdict: 'ERROR', z_basis: {}, x_basis: {} });
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        return (
+          <div className="app-shell">
+            <div className="topbar">
+              <div className="brand">
+                <div className="brand-mark" />
+                <span>Quantum Signature Demo</span>
+              </div>
+              <div className="status-pill"><span className="status-dot" /> Live protocol monitor</div>
+            </div>
+
+            <header className="hero">
+              <div className="hero-inner">
+                <div>
+                  <div className="eyebrow">Secure communication story</div>
+                  <h1>How Alice and Bob prove the message is real.</h1>
+                  <div className="hero-text">
+                    This is a plain-language view of a quantum-inspired signature system. Alice creates the proof,
+                    Bob checks the hidden pattern, and the detector rejects anything that looks forged, replayed, or tampered.
+                  </div>
+                  <div className="stats-bar">
+                    <div className="stat-box">
+                      <div className="stat-label">Shared pair</div>
+                      <div className="stat-value">Bell state</div>
+                    </div>
+                    <div className="stat-box">
+                      <div className="stat-label">Check</div>
+                      <div className="stat-value">Dual basis</div>
+                    </div>
+                    <div className="stat-box">
+                      <div className="stat-label">Verdict</div>
+                      <div className="stat-value">Accept / Reject</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mini-panel">
+                  <h3>Live message flow</h3>
+                  <div className={['scene', `scene-${active}`].join(' ')}>
+                    <div className="scene-status">
+                      {active === 'legit' ? 'Secure transfer' :
+                        active === 'forge' ? 'Forgery intercepted' :
+                        active === 'replay' ? 'Stale packet replayed' :
+                        active === 'channel' ? 'Channel noise detected' : 'Document hash transfer'}
+                    </div>
+                    <div className="orbit" />
+                    <div className="pulse one" />
+                    <div className="pulse two" />
+                    <div className="pulse three" />
+                    <div className="beam" />
+                    <div className="scene-packet" />
+                    {active === 'forge' || active === 'replay' || active === 'channel' ? (
+                      <div className="scene-attacker">{active === 'replay' ? 'Replay' : active === 'channel' ? 'Noise' : 'Interceptor'}</div>
+                    ) : null}
+
+                    <div className="person alice">
+                      <div className="avatar">A</div>
+                      <div className="label">Alice</div>
+                    </div>
+
+                    <div className="person bob">
+                      <div className="avatar">B</div>
+                      <div className="label">Bob</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <div className="content-grid">
+              <section className="panel">
+                <h2>Protocol scenarios</h2>
+                <div className="scenario-grid">
+                  {scenarios.map((scenario) => (
+                    <div
+                      key={scenario.id}
+                      className={['scenario-card', active === scenario.id ? 'active' : ''].join(' ')}
+                    >
+                      <div className="scenario-header">
+                        <div className="scenario-title">{scenario.title}</div>
+                        <div className={['scenario-tag', scenario.tone].join(' ')}>{scenario.label}</div>
+                      </div>
+                      <p>{scenario.story}</p>
+                      <button onClick={() => runScenario(scenario.id)}>
+                        {scenario.id === 'legit' ? 'Run normal flow' : 'Run simulation'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="panel detail-panel">
+                <h2>Simulation inputs</h2>
+
+                {active === 'legit' || active === 'forge' ? (
+                  <div className="input-box">
+                    <label>Message</label>
+                    <input value={message} onChange={(e) => setMessage(e.target.value)} />
+                  </div>
+                ) : null}
+
+                {active === 'replay' ? (
+                  <>
+                    <div className="input-box">
+                      <label>Old valid message</label>
+                      <input value={oldMessage} onChange={(e) => setOldMessage(e.target.value)} />
+                    </div>
+                    <div className="input-box">
+                      <label>New message to attack</label>
+                      <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                    </div>
+                  </>
+                ) : null}
+
+                {active === 'channel' ? (
+                  <div className="input-box">
+                    <label>Bit-flip noise</label>
+                    <input type="number" min="0" max="1" step="0.05" value={flipProb} onChange={(e) => setFlipProb(e.target.value)} />
+                  </div>
+                ) : null}
+
+                {active === 'document' ? (
+                  <>
+                    <div className="input-box">
+                      <label>Trusted original</label>
+                      <input type="file" onChange={(e) => setTrustedDocumentFile(e.target.files[0] || null)} />
+                      <small>{trustedDocumentFile ? trustedDocumentFile.name : 'Reference document used to create the trusted hash.'}</small>
+                    </div>
+                    <div className="input-box">
+                      <label>Document to verify</label>
+                      <input type="file" onChange={(e) => setDocumentFile(e.target.files[0] || null)} />
+                      <small>{documentFile ? documentFile.name : 'Upload the document to check for tampering.'}</small>
+                    </div>
+                  </>
+                ) : null}
+
+                <button className="run-button" onClick={() => runScenario(active)}>
+                  {loading ? 'Running protocol...' : 'Execute scenario'}
+                </button>
+
+                <div className="result-box">
+                  {renderResultBox(result)}
+                </div>
+
+                {renderSecurityTrace(result)}
+
+                <div className="legend">
+                  <div className="legend-item"><span className="dot good" /> Accept</div>
+                  <div className="legend-item"><span className="dot bad" /> Reject</div>
+                  <div className="legend-item"><span className="dot warn" /> Mismatch</div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+  </body>
+</html>
